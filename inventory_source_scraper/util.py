@@ -2,10 +2,11 @@
 """
 import os
 import logging
-import csv
+from openpyxl import Workbook, load_workbook
 from pathlib import Path
 
-output = 'output.xlsx'
+output = os.path.join(os.path.dirname(__file__), 'static', 'output.xlsx')
+
 
 def remove_output_file():
     file = Path(output)
@@ -15,42 +16,36 @@ def remove_output_file():
         print('No output file')
 
 
-def save_data(corp_name,
-              fei_ein_number,
-              date_filed,
-              status,
-              last_event,
-              principal_addr,
-              mailing_addr,
-              registered_agent_addr,
-              officer_addr,
-              url):
+def save_data(name, upc, company, price_inventory, price_amazon, shipping_amazon):
+    field_names = ['Product Name',
+                   'UPC',
+                   'Company',
+                   'Wholesale Price',
+                   'Amazon Price',
+                   'Prime Shipping',
+                   'Margin(%)',
+                   'Margin($)']
+
     file = Path(output)
-
-    field_names = ['Corporation Name',
-                   'FEI/EIN Number',
-                   'Date Filed',
-                   'Status',
-                   'Last Event',
-                   'Principal Address',
-                   'Mailing Address',
-                   'Registered Agent Name & Address',
-                   'Officer Direct Detail Name & Address',
-                   'Link']
     if file.is_file() is False:
-        with open(output, 'a') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=field_names)
-            writer.writeheader()
+        wb = Workbook()
+        ws = wb.active
+        for i, field_name in enumerate(field_names, start=1):
+            ws.cell(row=1, column=i, value=field_name)
+    else:
+        wb = load_workbook(filename=output)
+        ws = wb.active
 
-    with open(output, 'a') as csvfile:
-        writer = csv.writer(csvfile)
-        writer.writerow([corp_name,
-                         fei_ein_number,
-                         date_filed,
-                         status,
-                         last_event,
-                         principal_addr,
-                         mailing_addr,
-                         registered_agent_addr,
-                         officer_addr,
-                         url])
+    row = ws.max_row + 1
+    ws.cell(row=row, column=1, value=name)
+    ws.cell(row=row, column=2, value=upc)
+    ws.cell(row=row, column=3, value=company)
+    ws.cell(row=row, column=4, value=price_inventory)
+    ws.cell(row=row, column=5, value=price_amazon)
+    ws.cell(row=row, column=6, value=shipping_amazon)
+    ws.cell(row=row, column=7, value=f'=(E{row}-D{row})/D{row}*100')
+    ws.cell(row=row, column=8, value=f'=E{row}-D{row}')
+
+    wb.save(filename=output)
+
+

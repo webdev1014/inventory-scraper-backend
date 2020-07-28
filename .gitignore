@@ -120,3 +120,6 @@ chrome-user-data
 
 output.csv
 conf.yml
+
+# redis-stable
+redis-stable/

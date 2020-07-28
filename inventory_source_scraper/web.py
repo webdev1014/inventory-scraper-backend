@@ -1,5 +1,6 @@
 import json
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, jsonify, url_for
+from celery.result import AsyncResult
 from .util import remove_output_file
 from .scraper import Scraper
 
@@ -7,9 +8,10 @@ APP = Flask(__name__, static_folder='static', static_url_path='/static')
 
 
 def get_app():
-    scraper = Scraper()
-    scraper.run()
-
+    APP.config.from_mapping(
+        SECRET_KEY='inventory_source_scraper'
+    )
+    APP.config.update(CELERYD_HIJACK_ROOT_LOGGER=False)
     return APP
 
 
@@ -29,17 +31,37 @@ def get_output():
 @APP.route('/start', methods=['POST'])
 def restart():
     remove_output_file()
-    scraper = Scraper()
-    scraper.stop()
-    scraper.run()
+    task = APP.celery.tasks[Scraper.name].apply_async()
+    return jsonify({}), 202, {'Location': url_for('get_status', task_id=task.id)}
 
-    return json.dumps({'success': True})
 
-@APP.route('/get_status', methods=['POST'])
-def get_status():
-    scraper = Scraper()
+@APP.route('/get_status/task_id', methods=['POST'])
+def get_status(task_id):
+    print('task_id', task_id)
+    task = AsyncResult(task_id, app=APP.celery)
 
-    return json.dumps({
-        'success': True,
-        'data': scraper.get_status()
-    })
+    if task.state == 'PENDING':
+        response = {
+            'state': task.state,
+            'current': 0,
+            'total': 1,
+            'status': 'Pending...'
+        }
+    elif task.state != 'FAILURE':
+        response = {
+            'state': task.state,
+            'current': task.info.get('current', 0),
+            'total': task.info.get('total', 1),
+            'status': task.info.get('status', '')
+        }
+        if 'result' in task.info:
+            response['result'] = task.info['result']
+    else:
+        # something went wrong in the background job
+        response = {
+            'state': task.state,
+            'current': 1,
+            'total': 1,
+            'status': str(task.info),  # this is the exception raised
+        }
+    return jsonify(response)
