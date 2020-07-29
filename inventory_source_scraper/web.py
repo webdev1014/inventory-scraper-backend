@@ -32,12 +32,11 @@ def get_output():
 def restart():
     remove_output_file()
     task = APP.celery.tasks[Scraper.name].apply_async()
-    return jsonify({}), 202, {'Location': url_for('get_status', task_id=task.id)}
+    return jsonify({'task_id': task.id})
 
 
-@APP.route('/get_status/task_id', methods=['POST'])
+@APP.route('/get_status/<task_id>', methods=['POST'])
 def get_status(task_id):
-    print('task_id', task_id)
     task = AsyncResult(task_id, app=APP.celery)
 
     if task.state == 'PENDING':
@@ -45,7 +44,7 @@ def get_status(task_id):
             'state': task.state,
             'current': 0,
             'total': 1,
-            'status': 'Pending...'
+            'status': 'PENDING'
         }
     elif task.state != 'FAILURE':
         response = {
@@ -62,6 +61,8 @@ def get_status(task_id):
             'state': task.state,
             'current': 1,
             'total': 1,
-            'status': str(task.info),  # this is the exception raised
+            'status': 'FAILURE'
         }
+
+    print(jsonify(response))
     return jsonify(response)

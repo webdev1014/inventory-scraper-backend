@@ -25,27 +25,27 @@ class Scraper(Task):
         self.apply_filter()
 
         page_count = self.get_page_count()
-
-        for i in range(4):
+        page_count = 1
+        for i in range(page_count):
             items = self.get_inventory_products(i, None)
             for item in items:
                 if 'upc' not in item:
                     continue
 
                 products = self.get_inventory_products(0, item['upc'])
+                upc = item['upc']
+                product_amazon = self.get_amazon_product(upc)
+
                 for product_inventory in products:
                     name = product_inventory['title']
-                    upc = product_inventory['upc']
                     company = product_inventory['manufacturer'] if 'manufacturer' in product_inventory else ''
                     price_inventory = product_inventory['wholesale_price']
-                    product_amazon = self.get_amazon_product(upc)
                     price_amazon = product_amazon['price']
                     shipping_amazon = product_amazon['shipping']
                     save_data(name, upc, company, price_inventory, price_amazon, shipping_amazon)
-                    print(upc, price_amazon)
             self.update_state(state='PROGRESS', meta={
                 'current': i,
-                'total': 4
+                'total': page_count
             })
         return {
             'current': 4,
@@ -145,10 +145,7 @@ class Scraper(Task):
     def get_amazon_product(self, upc):
         self.driver.execute_script('window.open("");')
         self.driver.switch_to.window(self.driver.window_handles[1])
-        self.driver.get(self.url_amazon)
-        input_search = self.driver.find_element_by_id('twotabsearchtextbox')
-        input_search.send_keys(upc)
-        input_search.submit()
+        self.driver.get(f'https://www.amazon.com/s?k={upc}&ref=nb_sb_noss')
         price_whole = self.driver.find_elements_by_css_selector('div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-whole')
         price_fraction = self.driver.find_elements_by_css_selector('div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-fraction')
         count_price_whole = len(price_whole)
