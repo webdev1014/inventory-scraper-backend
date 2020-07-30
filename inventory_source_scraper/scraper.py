@@ -1,7 +1,7 @@
 import time
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.keys import Keys
+from pyvirtualdisplay import Display
 from celery import Task
 from .util import save_data
 
@@ -17,6 +17,10 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
+        display = Display(visible=0, size=(800, 600))
+        display.start()
+        options = webdriver.ChromeOptions()
+        options.add_argument('--no-sandbox')
         self.driver = webdriver.Chrome()
         self.driver.wait = WebDriverWait(self.driver, 5)
 
@@ -25,7 +29,9 @@ class Scraper(Task):
         self.apply_filter()
 
         page_count = self.get_page_count()
+        print('pagecount', page_count)
         page_count = 1
+
         for i in range(page_count):
             items = self.get_inventory_products(i, None)
             for item in items:

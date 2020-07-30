@@ -64,5 +64,4 @@ def get_status(task_id):
             'status': 'FAILURE'
         }
 
-    print(jsonify(response))
     return jsonify(response)
