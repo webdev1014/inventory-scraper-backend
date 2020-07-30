@@ -17,11 +17,11 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        display = Display(visible=0, size=(800, 600))
+        display = Display(visible=0, size=(1024, 768))
         display.start()
         options = webdriver.ChromeOptions()
         options.add_argument('--no-sandbox')
-        self.driver = webdriver.Chrome()
+        self.driver = webdriver.Chrome(chrome_options=options)
         self.driver.wait = WebDriverWait(self.driver, 5)
 
     def run(self):
