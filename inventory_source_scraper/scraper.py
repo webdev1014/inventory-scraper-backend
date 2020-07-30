@@ -43,6 +43,7 @@ class Scraper(Task):
                     price_amazon = product_amazon['price']
                     shipping_amazon = product_amazon['shipping']
                     save_data(name, upc, company, price_inventory, price_amazon, shipping_amazon)
+                print(upc, product_amazon['price'])
             self.update_state(state='PROGRESS', meta={
                 'current': i,
                 'total': page_count
