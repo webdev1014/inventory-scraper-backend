@@ -25,6 +25,7 @@ class Scraper(Task):
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         self.driver = webdriver.Chrome(chrome_options=options)
+        # self.driver = webdriver.Chrome()
         self.driver.wait = WebDriverWait(self.driver, 5)
 
     def run(self):
@@ -61,6 +62,9 @@ class Scraper(Task):
                 'current': i,
                 'total': page_count
             })
+        self.driver.execute_script('window.open("");')
+        self.driver.execute_script('window.close();')
+
         return {
             'current': 4,
             'total': 4,
