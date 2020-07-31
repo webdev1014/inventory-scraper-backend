@@ -28,6 +28,10 @@ class Scraper(Task):
         self.driver.wait = WebDriverWait(self.driver, 5)
 
     def run(self):
+        self.update_state(state='PROGRESS', meta={
+            'current': 0,
+            'total': 200000  # temporary total count
+        })
         self.login()
         self.apply_filter()
 
@@ -65,12 +69,16 @@ class Scraper(Task):
 
     def login(self):
         self.driver.get(self.url_login)
-        input_email = self.driver.find_element_by_name('email')
-        input_password = self.driver.find_element_by_name('password')
-        btn_login = self.driver.find_element_by_css_selector('button[type="submit"]')
-        input_email.send_keys(self.login_email)
-        input_password.send_keys(self.login_password)
-        btn_login.click()
+
+        try:
+            input_email = self.driver.find_element_by_name('email')
+            input_password = self.driver.find_element_by_name('password')
+            btn_login = self.driver.find_element_by_css_selector('button[type="submit"]')
+            input_email.send_keys(self.login_email)
+            input_password.send_keys(self.login_password)
+            btn_login.click()
+        except:
+            print('already logged in')
 
     def apply_filter(self):
         """apply a location filter as USA
@@ -156,8 +164,10 @@ class Scraper(Task):
         self.driver.execute_script('window.open("");')
         self.driver.switch_to.window(self.driver.window_handles[1])
         self.driver.get(f'https://www.amazon.com/s?k={upc}&ref=nb_sb_noss')
-        price_whole = self.driver.find_elements_by_css_selector('div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-whole')
-        price_fraction = self.driver.find_elements_by_css_selector('div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-fraction')
+        price_whole = self.driver.find_elements_by_css_selector(
+            'div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-whole')
+        price_fraction = self.driver.find_elements_by_css_selector(
+            'div[data-component-type=s-search-result] span[cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-fraction')
         count_price_whole = len(price_whole)
 
         if count_price_whole > 0:
@@ -179,4 +189,3 @@ class Scraper(Task):
         content = el_div.text
 
         return int(content[10:])
-
