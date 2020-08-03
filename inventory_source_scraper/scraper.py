@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=1)
+        self.pool = ThreadPoolExecutor(max_workers=4)
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
