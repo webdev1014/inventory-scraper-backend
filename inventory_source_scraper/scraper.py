@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=8)
+        self.pool = ThreadPoolExecutor(max_workers=6)
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
@@ -30,7 +30,7 @@ class Scraper(Task):
 
         page_count = self.get_page_count()
         print('pagecount', page_count)
-        page_count = 8
+        page_count = 6
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
@@ -254,6 +254,8 @@ class Scraper(Task):
         options.add_argument('--headless')
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--ignore-certificate-errors')
         driver = webdriver.Chrome(chrome_options=options)
         # driver = webdriver.Chrome()
         driver.wait = WebDriverWait(driver, 5)
