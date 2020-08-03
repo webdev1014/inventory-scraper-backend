@@ -124,3 +124,4 @@ conf.yml
 # redis-stable
 redis-stable/
 output.xlsx
+*.xlsx

@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor()
+        self.pool = ThreadPoolExecutor(max_workers=8)
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
@@ -45,8 +45,8 @@ class Scraper(Task):
             })
 
         return {
-            'current': 4,
-            'total': 4,
+            'current': page_count,
+            'total': page_count,
             'status': 'Task Completed'
         }
 
@@ -93,12 +93,13 @@ class Scraper(Task):
                 }
                 data_to_save.append(product)
 
+        driver.close()
+
         return data_to_save
 
     def login(self, driver):
-        driver.get(self.url_login)
-
         try:
+            driver.get(self.url_login)
             input_email = driver.find_element_by_name('email')
             input_password = driver.find_element_by_name('password')
             btn_login = driver.find_element_by_css_selector('button[type="submit"]')
@@ -180,12 +181,11 @@ class Scraper(Task):
                                     if (response.response) {
                                         resolve(response.response.docs);
                                     } else {
-                                        resolve([])
+                                        resolve([]);
                                     }
                                 },
                                 error: function(xhr) {
-                                    console.log("Error:", xhr);
-                                    resolve(null);
+                                    resolve([]);
                                 }
                             });
                         });
@@ -247,16 +247,16 @@ class Scraper(Task):
         return int(content[10:])
 
     def create_driver(self):
-        display = Display(visible=0, size=(1024, 768))
-        display.start()
-        options = webdriver.ChromeOptions()
-        options.add_argument('--disable-extensions')
-        options.add_argument('--headless')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--ignore-certificate-errors')
-        driver = webdriver.Chrome(chrome_options=options)
-        # driver = webdriver.Chrome()
+        # display = Display(visible=0, size=(1024, 768))
+        # display.start()
+        # options = webdriver.ChromeOptions()
+        # options.add_argument('--disable-extensions')
+        # options.add_argument('--headless')
+        # options.add_argument('--disable-gpu')
+        # options.add_argument('--no-sandbox')
+        # options.add_argument('--ignore-certificate-errors')
+        # driver = webdriver.Chrome(chrome_options=options)
+        driver = webdriver.Chrome()
         driver.wait = WebDriverWait(driver, 5)
 
         return driver
