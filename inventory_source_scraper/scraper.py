@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=6)
+        self.pool = ThreadPoolExecutor()
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
@@ -30,7 +30,7 @@ class Scraper(Task):
 
         page_count = self.get_page_count()
         print('pagecount', page_count)
-        page_count = 6
+        page_count = 2
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
