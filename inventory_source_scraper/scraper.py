@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=8)
+        self.pool = ThreadPoolExecutor(max_workers=16)
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
@@ -30,7 +30,7 @@ class Scraper(Task):
 
         page_count = self.get_page_count()
         print('pagecount', page_count)
-        page_count = 8
+        page_count = 16
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
@@ -63,21 +63,32 @@ class Scraper(Task):
 
             products = self.get_inventory_products(0, item['upc'], driver)
             upc = item['upc']
-            print(len(products), upc, page_index)
             product_amazon = self.get_amazon_product(upc)
 
             for product_inventory in products:
+                vendor_id = product_inventory['dropshipper_id']
+
+                if vendor_id == 308:
+                    vendor = 'US Direct (All Niches)'
+                elif vendor_id == 274:
+                    vendor = 'Doba'
+                else:
+                    continue
+
                 name = product_inventory['title']
                 company = product_inventory['manufacturer'] if 'manufacturer' in product_inventory else ''
                 price_inventory = product_inventory['wholesale_price']
+                price_msrp = product_inventory['msrp']
                 price_amazon = product_amazon['price']
                 shipping_amazon = product_amazon['shipping']
                 product = {
                     'name': name,
                     'upc': upc,
+                    'vendor': vendor,
                     'company': company,
                     'price_inventory': price_inventory,
                     'price_amazon': price_amazon,
+                    'price_msrp': price_msrp,
                     'shipping_amazon': shipping_amazon
                 }
                 data_to_save.append(product)
@@ -166,7 +177,11 @@ class Scraper(Task):
                                     'Content-Type': 'application/json'
                                 },
                                 success: function(response) {
-                                    resolve(response);
+                                    if (response.response) {
+                                        resolve(response.response.docs);
+                                    } else {
+                                        resolve([])
+                                    }
                                 },
                                 error: function(xhr) {
                                     console.log("Error:", xhr);
@@ -179,7 +194,7 @@ class Scraper(Task):
                     return result;
                     '''
         result = driver.execute_script(script)
-        return result['response']['docs'] if result else []
+        return result
 
     def get_amazon_product(self, upc):
         url = f'https://www.amazon.com/s?k={upc}&ref=nb_sb_noss'
@@ -232,15 +247,15 @@ class Scraper(Task):
         return int(content[10:])
 
     def create_driver(self):
-        # display = Display(visible=0, size=(1024, 768))
-        # display.start()
-        # options = webdriver.ChromeOptions()
-        # options.add_argument('--disable-extensions')
-        # options.add_argument('--headless')
-        # options.add_argument('--disable-gpu')
-        # options.add_argument('--no-sandbox')
-        # driver = webdriver.Chrome(chrome_options=options)
-        driver = webdriver.Chrome()
+        display = Display(visible=0, size=(1024, 768))
+        display.start()
+        options = webdriver.ChromeOptions()
+        options.add_argument('--disable-extensions')
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        driver = webdriver.Chrome(chrome_options=options)
+        # driver = webdriver.Chrome()
         driver.wait = WebDriverWait(driver, 5)
 
         return driver
