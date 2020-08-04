@@ -20,7 +20,18 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=4)
+        self.pool = ThreadPoolExecutor(max_workers=8)
+        display = Display(visible=0, size=(1024, 768))
+        display.start()
+        options = webdriver.ChromeOptions()
+        options.add_argument('--disable-extensions')
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--ignore-certificate-errors')
+        driver = webdriver.Chrome(chrome_options=options)
+        # self.driver = webdriver.Chrome()
+        self.driver.wait = WebDriverWait(self.driver, 5)
 
     def run(self):
         self.update_state(state='PROGRESS', meta={
@@ -51,17 +62,14 @@ class Scraper(Task):
         }
 
     def scrape(self, page_index):
-        driver = self.create_driver()
-        self.login(driver)
-
-        items = self.get_inventory_products(page_index, None, driver)
+        items = self.get_inventory_products(page_index, None)
         data_to_save = []
 
         for item in items:
             if 'upc' not in item:
                 continue
 
-            products = self.get_inventory_products(0, item['upc'], driver)
+            products = self.get_inventory_products(0, item['upc'])
             upc = item['upc']
             product_amazon = self.get_amazon_product(upc)
 
@@ -93,42 +101,40 @@ class Scraper(Task):
                 }
                 data_to_save.append(product)
 
-        driver.close()
-
         return data_to_save
 
-    def login(self, driver):
+    def login(self):
         try:
-            driver.get(self.url_login)
-            input_email = driver.find_element_by_name('email')
-            input_password = driver.find_element_by_name('password')
-            btn_login = driver.find_element_by_css_selector('button[type="submit"]')
+            self.driver.get(self.url_login)
+            input_email = self.driver.find_element_by_name('email')
+            input_password = self.driver.find_element_by_name('password')
+            btn_login = self.driver.find_element_by_css_selector('button[type="submit"]')
             input_email.send_keys(self.login_email)
             input_password.send_keys(self.login_password)
             btn_login.click()
         except:
             print('already logged in')
 
-    def apply_filter(self, driver):
+    def apply_filter(self):
         """apply a filter
         """
         script = '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(66)").click();' \
-                 '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(223)").click();' \
+                 '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(222)").click();' \
                  '$(".sidebar-col .options div:nth-child(3) .dropdown-menu div:nth-child(6)").click();' \
                  '$(".sidebar-col .options div:nth-child(4) .dropdown-menu div:nth-child(3)").click();' \
                  '$(".sidebar-col .options div:nth-child(9) .dropdown-menu div:nth-child(3)").click();'
-        driver.get(self.url_products)
-        time.sleep(20)
-        driver.execute_script(script)
-        el_wholesale_start = driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
+        self.driver.get(self.url_products)
+        time.sleep(10)
+        self.driver.execute_script(script)
+        el_wholesale_start = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
                                                                  'div:nth-child(1) div input')
-        el_wholesale_close = driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
+        el_wholesale_close = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
                                                                  'div:nth-child(3) div input')
-        el_msrp_start = driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
+        el_msrp_start = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
                                                             'div:nth-child(1) div input')
-        el_msrp_close = driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
+        el_msrp_close = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
                                                             'div:nth-child(3) div input')
-        el_btn_apply = driver.find_element_by_css_selector('.sidebar-col .text-right div.btn.btn-lg.btn-primary')
+        el_btn_apply = self.driver.find_element_by_css_selector('.sidebar-col .text-right div.btn.btn-lg.btn-primary')
         el_wholesale_start.send_keys('1')
         el_wholesale_close.send_keys('125')
         el_msrp_start.send_keys('25')
@@ -136,7 +142,7 @@ class Scraper(Task):
         el_btn_apply.click()
         time.sleep(10)
 
-    def get_inventory_products(self, index, upc, driver):
+    def get_inventory_products(self, index, upc):
         url = 'https://app.inventorysource.com/api/solr/'
 
         if upc:
@@ -193,7 +199,7 @@ class Scraper(Task):
                     const result = await getResult(url, params);
                     return result;
                     '''
-        result = driver.execute_script(script)
+        result = self.driver.execute_script(script)
         return result
 
     def get_amazon_product(self, upc):
@@ -236,27 +242,11 @@ class Scraper(Task):
     def get_page_count(self):
         """get number of pages
         """
-        driver = self.create_driver()
-        self.login(driver)
-        self.apply_filter(driver)
+        self.login()
+        self.apply_filter()
         time.sleep(10)
 
-        el_div = driver.find_element_by_css_selector('div[popover-is-open="search.go_to_page.is_open"] div')
+        el_div = self.driver.find_element_by_css_selector('div[popover-is-open="search.go_to_page.is_open"] div')
         content = el_div.text
 
         return int(content[10:])
-
-    def create_driver(self):
-        display = Display(visible=0, size=(1024, 768))
-        display.start()
-        options = webdriver.ChromeOptions()
-        options.add_argument('--disable-extensions')
-        options.add_argument('--headless')
-        options.add_argument('--disable-gpu')
-        options.add_argument('--no-sandbox')
-        options.add_argument('--ignore-certificate-errors')
-        driver = webdriver.Chrome(chrome_options=options)
-        # driver = webdriver.Chrome()
-        driver.wait = WebDriverWait(driver, 5)
-
-        return driver
