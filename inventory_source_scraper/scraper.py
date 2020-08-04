@@ -29,7 +29,7 @@ class Scraper(Task):
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--ignore-certificate-errors')
-        driver = webdriver.Chrome(chrome_options=options)
+        self.driver = webdriver.Chrome(chrome_options=options)
         # self.driver = webdriver.Chrome()
         self.driver.wait = WebDriverWait(self.driver, 5)
 
