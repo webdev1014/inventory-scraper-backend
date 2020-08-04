@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=4)
+        self.pool = ThreadPoolExecutor(max_workers=8)
         display = Display(visible=0, size=(1024, 768))
         display.start()
         options = webdriver.ChromeOptions()
@@ -40,6 +40,7 @@ class Scraper(Task):
         })
 
         page_count = self.get_page_count()
+        page_count = 16
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
