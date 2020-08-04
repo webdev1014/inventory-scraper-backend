@@ -20,7 +20,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
-        self.pool = ThreadPoolExecutor(max_workers=8)
+        self.pool = ThreadPoolExecutor(max_workers=4)
         display = Display(visible=0, size=(1024, 768))
         display.start()
         options = webdriver.ChromeOptions()
