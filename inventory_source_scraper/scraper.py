@@ -43,7 +43,6 @@ class Scraper(Task):
         })
 
         page_count = self.get_page_count()
-        page_count = 16
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
@@ -60,6 +59,7 @@ class Scraper(Task):
                 'total': page_count
             })
 
+        print('create_output_file')
         create_output_file()
 
         return {
