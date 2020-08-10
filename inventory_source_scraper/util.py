@@ -4,6 +4,7 @@ import os
 import logging
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
+from .database import Database
 
 output = os.path.join(os.path.dirname(__file__), 'static', 'output.xlsx')
 
@@ -16,7 +17,10 @@ def remove_output_file():
         print('No output file')
 
 
-def save_data(products):
+def create_output_file():
+    database = Database()
+    products = database.get_all_products()
+
     field_names = ['Product Name',
                    'UPC',
                    'Vendor',

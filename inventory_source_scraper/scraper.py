@@ -6,7 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 from celery import Task
-from .util import save_data
+from .util import create_output_file
+from .database import Database
 
 
 class Scraper(Task):
@@ -20,6 +21,7 @@ class Scraper(Task):
     login_password = 'Upwork1'
 
     def __init__(self):
+        self.database = Database()
         self.pool = ThreadPoolExecutor(max_workers=8)
         display = Display(visible=0, size=(1024, 768))
         display.start()
@@ -34,12 +36,14 @@ class Scraper(Task):
         self.driver.wait = WebDriverWait(self.driver, 5)
 
     def run(self):
+        self.database.remove_data()
         self.update_state(state='PROGRESS', meta={
             'current': 0,
             'total': 200000  # temporary total count
         })
 
         page_count = self.get_page_count()
+        page_count = 16
 
         futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
 
@@ -47,11 +51,16 @@ class Scraper(Task):
             i = futures[future]
             print('as_completed', i)
             products = future.result()
-            save_data(products)
+
+            for product in products:
+                self.database.save_data(product)
+
             self.update_state(state='PROGRESS', meta={
                 'current': i,
                 'total': page_count
             })
+
+        create_output_file()
 
         return {
             'current': page_count,
