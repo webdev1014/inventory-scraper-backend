@@ -17,7 +17,7 @@ class Database:
         self.cur = self.con.cursor()
         self.cur.execute('CREATE TABLE IF NOT EXISTS `products` ('
                          '`id` int(11) NOT NULL auto_increment, '
-                         '`name` VARCHAR(200), '
+                         '`name` VARCHAR(800), '
                          '`upc` VARCHAR(20), '
                          '`vendor` VARCHAR(50), '
                          '`company` VARCHAR(100), '
