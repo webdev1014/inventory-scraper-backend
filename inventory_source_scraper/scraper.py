@@ -69,7 +69,7 @@ class Scraper(Task):
                 'total': page_count
             })
 
-        print('create_output_file')
+        self.logger.error('create_output_file')
         create_output_file()
 
         return {
@@ -220,34 +220,37 @@ class Scraper(Task):
         return result
 
     def get_amazon_product(self, upc):
-        url = f'https://www.amazon.com/s?k={upc}&ref=nb_sb_noss'
-        headers = {
-            'authority': 'www.amazon.com',
-            'pragma': 'no-cache',
-            'cache-control': 'no-cache',
-            'dnt': '1',
-            'upgrade-insecure-requests': '1',
-            'user-agent': 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/51.0.2704.64 Safari/537.36',
-            'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,'
-                      'application/signed-exchange;v=b3;q=0.9',
-            'sec-fetch-site': 'none',
-            'sec-fetch-mode': 'navigate',
-            'sec-fetch-dest': 'document',
-            'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
-        }
-        request = requests.get(url, headers=headers)
-        content = BeautifulSoup(request.text, 'html.parser')
-        price_whole = content.select('div[data-component-type=s-search-result] span['
-                                     'cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-whole')
-        price_fraction = content.select('div[data-component-type=s-search-result] span['
-                                        'cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-fraction')
-        count_price_whole = len(price_whole)
+        price = ''
 
-        if count_price_whole > 0:
-            price = price_whole[0].text + price_fraction[0].text
-        else:
-            price = ''
+        try:
+            url = f'https://www.amazon.com/s?k={upc}&ref=nb_sb_noss'
+            headers = {
+                'authority': 'www.amazon.com',
+                'pragma': 'no-cache',
+                'cache-control': 'no-cache',
+                'dnt': '1',
+                'upgrade-insecure-requests': '1',
+                'user-agent': 'Mozilla/5.0 (X11; CrOS x86_64 8172.45.0) AppleWebKit/537.36 (KHTML, like Gecko) '
+                              'Chrome/51.0.2704.64 Safari/537.36',
+                'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,'
+                          'application/signed-exchange;v=b3;q=0.9',
+                'sec-fetch-site': 'none',
+                'sec-fetch-mode': 'navigate',
+                'sec-fetch-dest': 'document',
+                'accept-language': 'en-GB,en-US;q=0.9,en;q=0.8',
+            }
+            request = requests.get(url, headers=headers)
+            content = BeautifulSoup(request.text, 'html.parser')
+            price_whole = content.select('div[data-component-type=s-search-result] span['
+                                         'cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-whole')
+            price_fraction = content.select('div[data-component-type=s-search-result] span['
+                                            'cel_widget_id=MAIN-SEARCH_RESULTS] .a-price-fraction')
+            count_price_whole = len(price_whole)
+
+            if count_price_whole > 0:
+                price = price_whole[0].text + price_fraction[0].text
+        except:
+            self.logger.error(traceback.format_exc())
 
         product = {
             'price': price,
