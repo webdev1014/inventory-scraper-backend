@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-celery -A inventory_source_scraper.application.celery worker -l warn
+celery -A inventory_source_scraper.application.celery worker --logfile="logs/error.log" -l ERROR

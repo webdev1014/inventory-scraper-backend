@@ -6,6 +6,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 from celery import Task
+from celery.utils.log import get_task_logger
 from .util import create_output_file
 from .database import Database
 
@@ -34,8 +35,10 @@ class Scraper(Task):
         self.driver = webdriver.Chrome(chrome_options=options)
         # self.driver = webdriver.Chrome()
         self.driver.wait = WebDriverWait(self.driver, 5)
+        self.logger = get_task_logger('inventory_source_scraper')
 
     def run(self):
+        self.logger.error('started')
         self.database.remove_data()
         self.update_state(state='PROGRESS', meta={
             'current': 0,
@@ -44,11 +47,14 @@ class Scraper(Task):
 
         page_count = self.get_page_count()
 
-        futures = {self.pool.submit(self.scrape, i): i for i in range(page_count)}
+        futures = {}
+        for i in range(page_count):
+            future = self.pool.submit(self.scrape, i)
+            futures[future] = i
 
         for future in as_completed(futures):
             i = futures[future]
-            print('as_completed', i)
+            self.logger.error('as_completed %s', i)
             products = future.result()
 
             for product in products:
