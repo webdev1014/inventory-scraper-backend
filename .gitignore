@@ -80,6 +80,7 @@ target/
 
 
 ### Django ###
+*.log
 *.pot
 *.pyc
 __pycache__/
@@ -88,6 +89,7 @@ local_settings.py
 .env
 config.json
 db.sqlite3
+!logs/error.log
 
 # Sock file
 .sock
@@ -106,6 +108,7 @@ coverage/
 fixtures/dom/public/react-dom.js
 fixtures/dom/public/react.js
 test/the-files-to-test.generated.js
+*.log*
 chrome-user-data
 *.sublime-project
 *.sublime-workspace
