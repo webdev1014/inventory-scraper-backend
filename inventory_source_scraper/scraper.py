@@ -1,5 +1,6 @@
 import time
 import requests
+import traceback
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
@@ -58,7 +59,10 @@ class Scraper(Task):
             products = future.result()
 
             for product in products:
-                self.database.save_data(product)
+                try:
+                    self.database.save_data(product)
+                except:
+                    self.logger.error(traceback.format_exc())
 
             self.update_state(state='PROGRESS', meta={
                 'current': i,
