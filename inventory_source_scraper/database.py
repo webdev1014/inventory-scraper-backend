@@ -26,7 +26,7 @@ class Database:
                          '`price_amazon` VARCHAR(10), '
                          '`shipping_amazon` VARCHAR(10), '
                          'PRIMARY KEY (`id`))')
-        self.cur.execute('set max_allowed_packet=134217728')
+        self.cur.execute('set global max_allowed_packet=134217728')
 
     def remove_data(self):
         self.cur.execute('TRUNCATE TABLE `products`')
