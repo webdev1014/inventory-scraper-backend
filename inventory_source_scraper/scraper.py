@@ -79,45 +79,47 @@ class Scraper(Task):
         }
 
     def scrape(self, page_index):
-        items = self.get_inventory_products(page_index, None)
         data_to_save = []
 
-        for item in items:
-            if 'upc' not in item:
-                continue
-
-            products = self.get_inventory_products(0, item['upc'])
-            upc = item['upc']
-            product_amazon = self.get_amazon_product(upc)
-
-            for product_inventory in products:
-                vendor_id = product_inventory['dropshipper_id']
-
-                if vendor_id == 308:
-                    vendor = 'US Direct (All Niches)'
-                elif vendor_id == 274:
-                    vendor = 'Doba'
-                else:
+        try:
+            items = self.get_inventory_products(page_index, None)
+            for item in items:
+                if 'upc' not in item:
                     continue
 
-                name = product_inventory['title']
-                company = product_inventory['manufacturer'] if 'manufacturer' in product_inventory else ''
-                price_inventory = product_inventory['wholesale_price']
-                price_msrp = product_inventory['msrp']
-                price_amazon = product_amazon['price']
-                shipping_amazon = product_amazon['shipping']
-                product = {
-                    'name': name,
-                    'upc': upc,
-                    'vendor': vendor,
-                    'company': company,
-                    'price_inventory': price_inventory,
-                    'price_amazon': price_amazon,
-                    'price_msrp': price_msrp,
-                    'shipping_amazon': shipping_amazon
-                }
-                data_to_save.append(product)
+                products = self.get_inventory_products(0, item['upc'])
+                upc = item['upc']
+                product_amazon = self.get_amazon_product(upc)
 
+                for product_inventory in products:
+                    vendor_id = product_inventory['dropshipper_id']
+
+                    if vendor_id == 308:
+                        vendor = 'US Direct (All Niches)'
+                    elif vendor_id == 274:
+                        vendor = 'Doba'
+                    else:
+                        continue
+
+                    name = product_inventory['title']
+                    company = product_inventory['manufacturer'] if 'manufacturer' in product_inventory else ''
+                    price_inventory = product_inventory['wholesale_price']
+                    price_msrp = product_inventory['msrp']
+                    price_amazon = product_amazon['price']
+                    shipping_amazon = product_amazon['shipping']
+                    product = {
+                        'name': name,
+                        'upc': upc,
+                        'vendor': vendor,
+                        'company': company,
+                        'price_inventory': price_inventory,
+                        'price_amazon': price_amazon,
+                        'price_msrp': price_msrp,
+                        'shipping_amazon': shipping_amazon
+                    }
+                    data_to_save.append(product)
+        except:
+            self.logger.error(traceback.format_exc())
         return data_to_save
 
     def login(self):
@@ -136,7 +138,8 @@ class Scraper(Task):
         """apply a filter
         """
         script = '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(66)").click();' \
-                 '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(222)").click();' \
+                 '''$(".sidebar-col .options div:nth-child(1) .dropdown-menu ''' \
+                 '''div.ng-scope.item.flex-con.is-grow:contains('US Direct (All Niches)')").click();''' \
                  '$(".sidebar-col .options div:nth-child(3) .dropdown-menu div:nth-child(6)").click();' \
                  '$(".sidebar-col .options div:nth-child(4) .dropdown-menu div:nth-child(3)").click();' \
                  '$(".sidebar-col .options div:nth-child(9) .dropdown-menu div:nth-child(3)").click();'
@@ -144,13 +147,13 @@ class Scraper(Task):
         time.sleep(10)
         self.driver.execute_script(script)
         el_wholesale_start = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
-                                                                 'div:nth-child(1) div input')
+                                                                      'div:nth-child(1) div input')
         el_wholesale_close = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(5) div div '
-                                                                 'div:nth-child(3) div input')
+                                                                      'div:nth-child(3) div input')
         el_msrp_start = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
-                                                            'div:nth-child(1) div input')
+                                                                 'div:nth-child(1) div input')
         el_msrp_close = self.driver.find_element_by_css_selector('.sidebar-col .options div:nth-child(6) div div '
-                                                            'div:nth-child(3) div input')
+                                                                 'div:nth-child(3) div input')
         el_btn_apply = self.driver.find_element_by_css_selector('.sidebar-col .text-right div.btn.btn-lg.btn-primary')
         el_wholesale_start.send_keys('1')
         el_wholesale_close.send_keys('125')
