@@ -8,7 +8,6 @@ from pyvirtualdisplay import Display
 from bs4 import BeautifulSoup
 from celery import Task
 from celery.utils.log import get_task_logger
-from .util import create_output_file
 from .database import Database
 
 
@@ -50,6 +49,8 @@ class Scraper(Task):
 
         futures = {}
         for i in range(page_count):
+            if i != 41:
+                continue
             future = self.pool.submit(self.scrape, i)
             futures[future] = i
 
@@ -68,9 +69,6 @@ class Scraper(Task):
                 'current': i,
                 'total': page_count
             })
-
-        self.logger.error('create_output_file')
-        create_output_file()
 
         return {
             'current': page_count,

@@ -3,6 +3,7 @@ from flask import Flask, send_from_directory, jsonify, url_for
 from celery.result import AsyncResult
 from .util import remove_output_file
 from .scraper import Scraper
+from .util import create_output_file
 
 APP = Flask(__name__, static_folder='static', static_url_path='/static')
 
@@ -25,6 +26,7 @@ def index(path=None):
 
 @APP.route('/get_output', methods=['GET', 'POST'])
 def get_output():
+    create_output_file()
     return send_from_directory(APP.static_folder, 'output.xlsx', as_attachment=True)
 
 
