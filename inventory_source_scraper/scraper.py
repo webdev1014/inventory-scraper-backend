@@ -49,8 +49,6 @@ class Scraper(Task):
 
         futures = {}
         for i in range(page_count):
-            if i != 41:
-                continue
             future = self.pool.submit(self.scrape, i)
             futures[future] = i
 
