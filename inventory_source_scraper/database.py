@@ -44,8 +44,15 @@ class Database:
                                  product['shipping_amazon']))
         return
 
-    def get_all_products(self):
-        query = 'SELECT * FROM `products`'
+    def get_num_rows(self):
+        query = 'SELECT COUNT(*) FROM `products`'
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        return result[0]['COUNT(*)']
+
+    def get_products(self, start_at, batch_size):
+        query = 'SELECT * FROM `products` ORDER BY `name` DESC LIMIT %i, %i'
+        query = query % (start_at * batch_size, batch_size)
         self.cur.execute(query)
         result = self.cur.fetchall()
         return result

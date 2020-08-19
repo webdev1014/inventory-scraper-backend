@@ -5,6 +5,7 @@ import logging
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
 from .database import Database
+from math import ceil
 
 output = os.path.join(os.path.dirname(__file__), 'static', 'output.xlsx')
 
@@ -18,10 +19,10 @@ def remove_output_file():
 
 
 def create_output_file():
-    print('create_output_file')
     database = Database()
-    products = database.get_all_products()
-    print('fetched products')
+    total_rows = database.get_num_rows()
+    print(total_rows)
+    batch_size = 1000
 
     field_names = ['Product Name',
                    'UPC',
@@ -46,19 +47,22 @@ def create_output_file():
 
     row = ws.max_row + 1
 
-    for product in products:
-        ws.cell(row=row, column=1, value=product['name'])
-        ws.cell(row=row, column=2, value=product['upc'])
-        ws.cell(row=row, column=3, value=product['vendor'])
-        ws.cell(row=row, column=4, value=product['company'])
-        ws.cell(row=row, column=5, value=product['price_inventory'])
-        ws.cell(row=row, column=6, value=product['price_msrp'])
-        ws.cell(row=row, column=7, value=product['price_amazon'])
-        ws.cell(row=row, column=8, value=product['shipping_amazon'])
-        ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
-        ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
-        row += 1
-    print('saving output')
+    for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
+        print('fetching')
+        products = database.get_products(start_at, batch_size)
+        print('fetched')
+        for product in products:
+            ws.cell(row=row, column=1, value=product['name'])
+            ws.cell(row=row, column=2, value=product['upc'])
+            ws.cell(row=row, column=3, value=product['vendor'])
+            ws.cell(row=row, column=4, value=product['company'])
+            ws.cell(row=row, column=5, value=product['price_inventory'])
+            ws.cell(row=row, column=6, value=product['price_msrp'])
+            ws.cell(row=row, column=7, value=product['price_amazon'])
+            ws.cell(row=row, column=8, value=product['shipping_amazon'])
+            ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
+            ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
+            row += 1
 
     wb.save(filename=output)
 
