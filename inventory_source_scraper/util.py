@@ -21,7 +21,7 @@ def remove_output_file():
 def create_output_file():
     database = Database()
     total_rows = database.get_num_rows()
-    print(total_rows)
+    print('total_rows------', total_rows)
     batch_size = 1000
 
     field_names = ['Product Name',
@@ -48,9 +48,7 @@ def create_output_file():
     row = ws.max_row + 1
 
     for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
-        print('fetching')
         products = database.get_products(start_at, batch_size)
-        print('fetched')
         for product in products:
             ws.cell(row=row, column=1, value=product['name'])
             ws.cell(row=row, column=2, value=product['upc'])

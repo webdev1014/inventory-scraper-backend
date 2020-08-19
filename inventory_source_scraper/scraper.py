@@ -9,6 +9,7 @@ from bs4 import BeautifulSoup
 from celery import Task
 from celery.utils.log import get_task_logger
 from .database import Database
+from .util import create_output_file
 
 
 class Scraper(Task):
@@ -67,6 +68,9 @@ class Scraper(Task):
                 'current': i,
                 'total': page_count
             })
+
+        self.logger.error('create_output_file')
+        create_output_file()
 
         return {
             'current': page_count,
