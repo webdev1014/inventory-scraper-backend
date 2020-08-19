@@ -18,8 +18,10 @@ def remove_output_file():
 
 
 def create_output_file():
+    print('create_output_file')
     database = Database()
     products = database.get_all_products()
+    print('fetched products')
 
     field_names = ['Product Name',
                    'UPC',
@@ -56,6 +58,7 @@ def create_output_file():
         ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
         ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
         row += 1
+    print('saving output')
 
     wb.save(filename=output)
 
