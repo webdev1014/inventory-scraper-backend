@@ -71,6 +71,7 @@ class Scraper(Task):
 
         self.logger.error('create_output_file')
         create_output_file()
+        self.logger.error('created output')
 
         # return {
         #     'current': page_count,
