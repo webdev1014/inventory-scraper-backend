@@ -125,3 +125,4 @@ conf.yml
 redis-stable/
 output.xlsx
 *.xlsx
+logs/error.log
