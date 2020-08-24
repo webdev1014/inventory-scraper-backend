@@ -55,7 +55,7 @@ def create_output_file():
             ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
             ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
             row += 1
-        print('start_at %s', start_at)
+        print('start_at %s' % str(start_at))
         wb.save(filename=output)
 
 
