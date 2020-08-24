@@ -1,7 +1,6 @@
 import json
 from flask import Flask, send_from_directory, jsonify, url_for
 from celery.result import AsyncResult
-from .util import remove_output_file
 from .scraper import Scraper
 
 APP = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -31,7 +30,6 @@ def get_output():
 
 @APP.route('/start', methods=['POST'])
 def restart():
-    remove_output_file()
     task = APP.celery.tasks[Scraper.name].apply_async()
     return jsonify({'task_id': task.id})
 

@@ -19,6 +19,8 @@ def remove_output_file():
 
 
 def create_output_file():
+    remove_output_file()
+
     database = Database()
     total_rows = database.get_num_rows()
     print('total_rows------', total_rows)
@@ -34,22 +36,14 @@ def create_output_file():
                    'Prime Shipping',
                    'Margin(%)',
                    'Margin($)']
-
-    file = Path(output)
-    if file.is_file() is False:
-        wb = Workbook()
-        ws = wb.active
-        for i, field_name in enumerate(field_names, start=1):
-            ws.cell(row=1, column=i, value=field_name)
-    else:
-        wb = load_workbook(filename=output)
-        ws = wb.active
-
-    row = ws.max_row + 1
+    wb = Workbook()
+    ws = wb.active
+    for i, field_name in enumerate(field_names, start=1):
+        ws.cell(row=1, column=i, value=field_name)
 
     for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
         products = database.get_products(start_at, batch_size)
-        for product in products:
+        for row, product in enumerate(products, start=2):
             ws.cell(row=row, column=1, value=product['name'])
             ws.cell(row=row, column=2, value=product['upc'])
             ws.cell(row=row, column=3, value=product['vendor'])
@@ -61,7 +55,6 @@ def create_output_file():
             ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
             ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
             row += 1
-
-    wb.save(filename=output)
+        wb.save(filename=output)
 
 

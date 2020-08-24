@@ -40,41 +40,47 @@ class Scraper(Task):
 
     def run(self):
         self.logger.error('started')
-        self.database.remove_data()
-        self.update_state(state='PROGRESS', meta={
-            'current': 0,
-            'total': 200000  # temporary total count
-        })
-
-        page_count = self.get_page_count()
-
-        futures = {}
-        for i in range(page_count):
-            future = self.pool.submit(self.scrape, i)
-            futures[future] = i
-
-        for future in as_completed(futures):
-            i = futures[future]
-            self.logger.error('as_completed %s', i)
-            products = future.result()
-
-            for product in products:
-                try:
-                    self.database.save_data(product)
-                except:
-                    self.logger.error(traceback.format_exc())
-
-            self.update_state(state='PROGRESS', meta={
-                'current': i,
-                'total': page_count
-            })
+        # self.database.remove_data()
+        # self.update_state(state='PROGRESS', meta={
+        #     'current': 0,
+        #     'total': 200000  # temporary total count
+        # })
+        #
+        # page_count = self.get_page_count()
+        #
+        # futures = {}
+        # for i in range(page_count):
+        #     future = self.pool.submit(self.scrape, i)
+        #     futures[future] = i
+        #
+        # for future in as_completed(futures):
+        #     i = futures[future]
+        #     self.logger.error('as_completed %s', i)
+        #     products = future.result()
+        #
+        #     for product in products:
+        #         try:
+        #             self.database.save_data(product)
+        #         except:
+        #             self.logger.error(traceback.format_exc())
+        #
+        #     self.update_state(state='PROGRESS', meta={
+        #         'current': i,
+        #         'total': page_count
+        #     })
 
         self.logger.error('create_output_file')
         create_output_file()
 
+        # return {
+        #     'current': page_count,
+        #     'total': page_count,
+        #     'status': 'Task Completed'
+        # }
+
         return {
-            'current': page_count,
-            'total': page_count,
+            'current': 1,
+            'total': 1,
             'status': 'Task Completed'
         }
 
