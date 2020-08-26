@@ -42,20 +42,23 @@ def create_output_file():
         ws.cell(row=1, column=i, value=field_name)
 
     for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
-        products = database.get_products(start_at, batch_size)
-        for row, product in enumerate(products, start=2):
-            ws.cell(row=row, column=1, value=product['name'])
-            ws.cell(row=row, column=2, value=product['upc'])
-            ws.cell(row=row, column=3, value=product['vendor'])
-            ws.cell(row=row, column=4, value=product['company'])
-            ws.cell(row=row, column=5, value=product['price_inventory'])
-            ws.cell(row=row, column=6, value=product['price_msrp'])
-            ws.cell(row=row, column=7, value=product['price_amazon'])
-            ws.cell(row=row, column=8, value=product['shipping_amazon'])
-            ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
-            ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
-            row += 1
-        print('start_at %s' % str(start_at))
-        wb.save(filename=output)
+        try:
+            products = database.get_products(start_at, batch_size)
+            for row, product in enumerate(products, start=2):
+                ws.cell(row=row, column=1, value=product['name'])
+                ws.cell(row=row, column=2, value=product['upc'])
+                ws.cell(row=row, column=3, value=product['vendor'])
+                ws.cell(row=row, column=4, value=product['company'])
+                ws.cell(row=row, column=5, value=product['price_inventory'])
+                ws.cell(row=row, column=6, value=product['price_msrp'])
+                ws.cell(row=row, column=7, value=product['price_amazon'])
+                ws.cell(row=row, column=8, value=product['shipping_amazon'])
+                ws.cell(row=row, column=9, value=f'=IF(G{row}="",(F{row}-E{row})/E{row}*100,(G{row}-E{row})/E{row}*100)')
+                ws.cell(row=row, column=10, value=f'=IF(G{row}="",F{row}-E{row},G{row}-E{row})')
+                row += 1
+            print('start_at %s' % str(start_at))
+            wb.save(filename=output)
+        except:
+            pass
 
 
