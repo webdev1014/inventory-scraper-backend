@@ -138,7 +138,8 @@ class Scraper(Task):
     def apply_filter(self):
         """apply a filter
         """
-        script = '$(".sidebar-col .options div:nth-child(1) .dropdown-menu div:nth-child(66)").click();' \
+        script = '''$(".sidebar-col .options div:nth-child(1) .dropdown-menu ''' \
+                 '''div.ng-scope.item.flex-con.is-grow:contains('Doba')").click();''' \
                  '''$(".sidebar-col .options div:nth-child(1) .dropdown-menu ''' \
                  '''div.ng-scope.item.flex-con.is-grow:contains('US Direct (All Niches)')").click();''' \
                  '$(".sidebar-col .options div:nth-child(3) .dropdown-menu div:nth-child(6)").click();' \
