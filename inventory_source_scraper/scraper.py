@@ -47,8 +47,8 @@ class Scraper(Task):
         })
 
         page_count = self.get_page_count()
-
         futures = {}
+
         for i in range(page_count):
             future = self.pool.submit(self.scrape, i)
             futures[future] = i

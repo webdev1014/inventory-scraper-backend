@@ -40,11 +40,16 @@ def create_output_file():
     ws = wb.active
     for i, field_name in enumerate(field_names, start=1):
         ws.cell(row=1, column=i, value=field_name)
+    wb.save(filename=output)
 
     for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
         try:
+            wb = load_workbook(filename=output)
+            ws = wb.active
+            row = ws.max_row + 1
             products = database.get_products(start_at, batch_size)
-            for row, product in enumerate(products, start=2):
+
+            for product in products:
                 ws.cell(row=row, column=1, value=product['name'])
                 ws.cell(row=row, column=2, value=product['upc'])
                 ws.cell(row=row, column=3, value=product['vendor'])
