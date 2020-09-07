@@ -1,7 +1,7 @@
 """inventory_source_scraper Utility methods
 """
 import os
-import logging
+import traceback
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
 from .database import Database
@@ -24,7 +24,7 @@ def create_output_file():
     database = Database()
     total_rows = database.get_num_rows()
     print('total_rows------', total_rows)
-    batch_size = 1000
+    batch_size = 100
 
     field_names = ['Product Name',
                    'UPC',
@@ -64,6 +64,7 @@ def create_output_file():
             print('start_at %s' % str(start_at))
             wb.save(filename=output)
         except:
+            print(traceback.format_exc())
             pass
 
 
