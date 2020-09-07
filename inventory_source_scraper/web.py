@@ -1,6 +1,6 @@
 import json
 from flask import Flask, send_from_directory, jsonify, url_for
-from celery.result import AsyncResult
+from .database import Database
 from .scraper import Scraper
 
 APP = Flask(__name__, static_folder='static', static_url_path='/static')
@@ -30,37 +30,17 @@ def get_output():
 
 @APP.route('/start', methods=['POST'])
 def restart():
-    task = APP.celery.tasks[Scraper.name].apply_async()
-    return jsonify({'task_id': task.id})
+    db = Database()
+    status = db.get_status()
+
+    if status != 'RUNNING':
+        APP.celery.tasks[Scraper.name].apply_async()
+    return jsonify({'success': True, 'status': status})
 
 
-@APP.route('/get_status/<task_id>', methods=['POST'])
-def get_status(task_id):
-    task = AsyncResult(task_id, app=APP.celery)
+@APP.route('/get_status', methods=['POST'])
+def get_status():
+    db = Database()
+    status = db.get_status()
 
-    if task.state == 'PENDING':
-        response = {
-            'state': task.state,
-            'current': 0,
-            'total': 1,
-            'status': 'PENDING'
-        }
-    elif task.state != 'FAILURE':
-        response = {
-            'state': task.state,
-            'current': task.info.get('current', 0),
-            'total': task.info.get('total', 1),
-            'status': task.info.get('status', '')
-        }
-        if 'result' in task.info:
-            response['result'] = task.info['result']
-    else:
-        # something went wrong in the background job
-        response = {
-            'state': task.state,
-            'current': 1,
-            'total': 1,
-            'status': 'FAILURE'
-        }
-
-    return jsonify(response)
+    return jsonify({'success': True, 'status': status})

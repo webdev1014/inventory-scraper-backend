@@ -41,6 +41,7 @@ class Scraper(Task):
     def run(self):
         self.logger.error('started')
         self.database.remove_data()
+        self.database.save_status('PROGRESS')
         self.update_state(state='PROGRESS', meta={
             'current': 0,
             'total': 200000  # temporary total count
@@ -72,7 +73,7 @@ class Scraper(Task):
         self.logger.error('create_output_file')
         create_output_file()
         self.logger.error('created output')
-
+        self.database.save_status('FINISHED')
         return {
             'current': page_count,
             'total': page_count,

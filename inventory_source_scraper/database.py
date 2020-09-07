@@ -26,7 +26,26 @@ class Database:
                          '`price_amazon` VARCHAR(10), '
                          '`shipping_amazon` VARCHAR(10), '
                          'PRIMARY KEY (`id`))')
+        self.cur.execute('CREATE TABLE IF NOT EXISTS `status` ('
+                         '`id` int(11) NOT NULL, '
+                         '`status` VARCHAR(50), '
+                         'PRIMARY KEY (`id`))')
         self.cur.execute('set global max_allowed_packet=134217728')
+
+    def save_status(self, status):
+        query = 'INSERT INTO `status` (id, status) VALUES(1, "%s") ON DUPLICATE KEY UPDATE status="%s"'
+        query = query % (status, status)
+        self.cur.execute(query)
+
+    def get_status(self):
+        query = 'SELECT * FROM `status`'
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+
+        if len(result) > 0:
+            return result[0]['status']
+
+        return 'NOT_STARTED'
 
     def remove_data(self):
         if not self.con.open:
@@ -65,7 +84,7 @@ class Database:
         if not self.con.open:
             self.con.ping(reconnect=True)
         self.cur = self.con.cursor()
-        
+
         query = 'SELECT * FROM `products` ORDER BY `name` DESC LIMIT %i, %i'
         query = query % (start_at * batch_size, batch_size)
         self.cur.execute(query)
