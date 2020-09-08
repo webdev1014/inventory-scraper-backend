@@ -24,7 +24,7 @@ def create_output_file():
     database = Database()
     total_rows = database.get_num_rows()
     print('total_rows------', total_rows)
-    batch_size = 100
+    batch_size = 500
 
     field_names = ['Product Name',
                    'UPC',
