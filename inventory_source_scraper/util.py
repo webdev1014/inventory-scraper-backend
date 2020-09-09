@@ -2,6 +2,7 @@
 """
 import os
 import traceback
+import time
 from openpyxl import Workbook, load_workbook
 from pathlib import Path
 from .database import Database
@@ -42,6 +43,8 @@ def create_output_file():
         ws.cell(row=1, column=i, value=field_name)
     wb.save(filename=output)
 
+    time.sleep(10)
+
     for start_at in range(int(ceil(total_rows / batch_size * 1.0))):
         try:
             wb = load_workbook(filename=output)
@@ -63,6 +66,7 @@ def create_output_file():
                 row += 1
             print('start_at %s' % str(start_at))
             wb.save(filename=output)
+            time.sleep(2)
         except:
             print(traceback.format_exc())
             pass

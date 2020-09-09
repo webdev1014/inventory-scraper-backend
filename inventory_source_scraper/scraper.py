@@ -134,6 +134,9 @@ class Scraper(Task):
             input_password.send_keys(self.login_password)
             btn_login.click()
         except:
+            time.sleep(20)
+            self.driver.get(self.url_products)
+            time.sleep(20)
             print('already logged in')
 
     def apply_filter(self):
