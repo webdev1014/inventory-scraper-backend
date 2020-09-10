@@ -48,7 +48,7 @@ class Scraper(Task):
         })
 
         page_count = self.get_page_count()
-        page_count = 10000
+        page_count = 3000
         futures = {}
 
         for i in range(page_count):
