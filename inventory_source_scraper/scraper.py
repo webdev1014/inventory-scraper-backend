@@ -72,7 +72,7 @@ class Scraper(Task):
             })
 
         self.logger.error('create_output_file')
-        create_output_file()
+        create_output_file(self.database)
         self.logger.error('created output')
         self.database.save_status('FINISHED')
         return {

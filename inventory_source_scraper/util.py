@@ -19,10 +19,8 @@ def remove_output_file():
         print('No output file')
 
 
-def create_output_file():
+def create_output_file(database):
     remove_output_file()
-
-    database = Database()
     total_rows = database.get_num_rows()
     print('total_rows------', total_rows)
     batch_size = 500
